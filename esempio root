@@ -1,0 +1,57 @@
+#include "TApplication.h"
+#include "TCanvas.h"
+#include "TH1F.h"
+#include "funzioni.h"
+#include <fstream>
+#include <iostream>
+
+using namespace std;
+
+int main(int argc, char **argv) {
+
+  if (argc < 2) {
+    cout << "Uso del programma : " << argv[0]
+         << " <n_data> <filename> or only <filename> " << endl;
+    return -1;
+  }
+
+  // creo un processo "app" che lascia il programma attivo ( app.Run() ) in modo
+  // da permettermi di vedere gli outputs grafici
+
+  TApplication app("app", 0, 0);
+
+  vector<double> v;
+
+  // leggo dati da file
+  if (argc > 2) { // leggo numero di dati deciso dal terminale
+    v = Read<double>(atoi(argv[1]), argv[2]);
+  }
+  if (argc == 2) {
+    v = ReadAll<double>(argv[1]); // leggo tutti i dati del file
+  }
+
+  // Creo un istogramma monodimensionale
+
+  TH1F histo("histo", "histo", 100, -10, 100);
+  histo.StatOverflows(kTRUE);
+
+  // Riempire l'istogramma attraverso un ciclo
+
+  for (int j = 0; j < v.size(); j++)
+    histo.Fill(v[j]);
+
+  // accedo a informazioni statistiche
+
+  cout << "Media dei valori caricati = " << histo.GetMean() << endl;
+  cout << "Dev Std dei valori caricati = " << histo.GetStdDev() << endl;
+
+  // disegno
+
+  TCanvas mycanvas("Histo", "Histo");
+  histo.Draw();
+  histo.GetXaxis()->SetTitle("Measurement");
+
+  app.Run();
+
+  return 0;
+}
